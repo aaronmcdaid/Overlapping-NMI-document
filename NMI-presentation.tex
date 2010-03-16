@@ -1,0 +1,201 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemesplit}
+\usepackage{amsmath}
+\usepackage{verbatim}
+
+\title{Similarity Measures}
+\author{Aaron McDaid}
+\date{\today}
+
+\newcommand{\subitem}[1]{\begin{itemize} \item #1 \end{itemize}}
+
+\begin{document}
+
+\frame{\titlepage}
+
+%\section[Outline]{}
+%\frame{\tableofcontents}
+
+%\section{Introduction}
+%\subsection{Overview of the Beamer Class}
+\frame
+{
+  %\frametitle{Features of the B}
+
+  \begin{itemize}
+  \item \emph{partition}: Every node in \emph{exactly} one community.
+  \item \emph{grouping/community assignment}: Some nodes in many communities. Some nodes in no communities.
+  \item I'll use \emph{grouping}, just because it's a shorter word!
+  \end{itemize}
+}
+
+\frame
+{
+  %\frametitle{Features of the B}
+
+  \begin{itemize}
+  \item Easier to define similarity of two partitions. But there are still many alternatives.
+  	\begin{itemize}
+  	\item NMI (for partitions) \footnote{Meila M 2007 J. Multivariate Anal.}.
+  	\item (Adjusted) Mutual information?
+  	\item (Adjusted) Rand index?
+  	\end{itemize}
+	\item I only know about (N) MI for now. So I'll focus on that here.
+  \end{itemize}
+}
+
+\frame
+{
+  \frametitle{(N)MI for partitions}
+
+  \begin{itemize}
+  \item Two partitions to compare
+  	\begin{itemize}
+		\item AAABBCCC and DDEEEFFF
+  	\end{itemize}
+  \item $ \mathrm{P}(A) = \mathrm{P}(C) = \mathrm{P}(E) = \mathrm{P}(F) = \frac38 $
+  \item $ \mathrm{P}(B) = \mathrm{P}(D) = \frac28 $
+	\item Mutual information
+		\begin{align*}
+ 		I(X;Y) &= \sum_{y \in Y} \sum_{x \in X} 
+                 		p(x,y) \log{ \left( \frac{p(x,y)}{p_1(x)\,p_2(y)}
+                              		\right) },                           \\
+				&= H(X) - H (X|Y)                                              \\
+				&= H(Y) - H (Y|X)                                              \\
+		H(x)		&= 8 \, \mathrm{P}(x) \log \mathrm{P}(x)
+		\end{align*}
+	\item There's no `matching' issue. You just iterate through the nodes, looking at the two communities it is in, found and ground-truth.
+  \end{itemize}
+}
+
+\frame
+{
+  \frametitle{NMI for groupings}
+
+  \begin{itemize}
+  \item Two groupings to compare.
+	\item Every item can be unique, in that it is a member of a different set of communities. E.g. Facebook - each node may be in a different set of seven communities.
+	\item So what are X and Y now?
+	\item Can't treat X as a vector of numbers, for each node, encoding its membership. Equivalent to replacing the grouping with the partition of intersections - throws away most information.
+  \end{itemize}
+}
+
+\frame
+{
+  \frametitle{NMI for groupings}
+
+  \begin{itemize}
+	\item Another approximation is to just take a pair of communities to compare against each other, treating them as simple binary strings.
+	\subitem{Before looking at options to do that, we need to beware of the big picture. How do we combine them all together for two big groupings?}
+  \end{itemize}
+}
+
+\newcommand{\Power}[0]{\mathcal{P}}
+
+\frame
+{
+  \frametitle{NMI for groupings}
+
+  \begin{itemize}
+	\item The LFKNMI method introduces approximations. These errors add up. By definition of NMI, % The NVOI approximation then diverges far from its relationship the desired NMI.
+		\begin{align*}
+				I(X;Y) = H(X) - H(X|Y) = H(Y) - H(X|Y) 
+		\end{align*}
+	\item This should mean that
+		\begin{align*}
+				H(X) - H(X|Y) = H(Y) - H(Y|X) 
+		\end{align*}
+	\item Then, if Y is the power set of the nodes, $\mathcal{P}$,
+		\begin{align*}
+				H(X) - H(X|\Power) = H(\Power) - H(\Power|X) 
+		\end{align*}
+	\item All fine so far ...
+  \end{itemize}
+}
+
+
+\frame
+{
+  \frametitle{NMI for groupings}
+
+  \begin{itemize}
+	\item The LFKNMI method tends to underestimate $H(X_k|Y)$ by defining $H(X_k|Y) = \min H(X_k|Y_l)$. This gives us
+		\begin{align*}
+				H(X|\Power) = 0
+		\end{align*}
+		\begin{align*}
+				H(X) - H(X|\Power) &= H(\Power) - H(\Power|X)               \\
+				H(X) -   0     &= H(\Power) - H(\Power|X)                            \\
+				H(X) + H(\Power|X) &= H(\Power)                             \\
+				H(X,\Power) &= H(\Power)  
+		\end{align*}
+		\item LHS depends on $X$, but RHS doesn't!
+		\item This error contributes to the fact that LFKNMI$(X,\Power) \geq 0.5$, and the fact that LFKNMI can be quite high even if many near-duplicates are found.
+  \end{itemize}
+}
+
+\frame
+{
+  \frametitle{ MI relationship to VOI ? }
+
+  \begin{itemize}
+	\item MI and VoI are different. But there is a relationship between them, in theory. Note, $H(X,Y) = H(X) + H(Y|X)$
+		\begin{align*}
+				MI + VoI &= \left[ H(X) + H(Y) - H(X,Y) \right] + \left[ H(X|Y) + H(Y|X) \right]        \\
+				 &= H(X) + H(Y) - H(X,Y) + H(X|Y) + H(Y|X)                                              \\
+				 &= H(X) + H(Y) - H(X) - H(Y|X) + H(X|Y) + H(Y|X)                                       \\
+				 &=        H(Y)                 + H(X|Y)                                                \\
+			MI + VoI 	 &= H(X,Y)
+		\end{align*}
+	\item This analysis breaks down in the LFKNMI, as seen in the last slide.
+	\item Hence, we need an improved formulation that doesn't rely on a relationship between MI and VoI and is conscious of known problems.
+  \end{itemize}
+}
+
+\frame
+{
+  \frametitle{ Stopgap }
+
+  \begin{itemize}
+	\item We need an improved formulation. As a stopgap, we could just use the NMI directly,
+		\begin{align*}
+			\text{LFKNMI}^* &= \frac { H(X) + H(Y) - H(X,Y) } { \left( H(X) + H(Y) \right ) /2 }                   \\
+			                &= \frac { H(Y) - H(Y|X) + H(X) - H(X|Y) } { \left( H(X) + H(Y) \right )  }                  
+		\end{align*}
+ 	where we use the LFK-like definitions:
+		\begin{align*}
+			H(X) = \sum_k H(X_k)   & \; \text{\emph{and}} \;         H(Y) = \sum_l H(Y_l)            \\
+			H(X_k|Y) &= \min H(X_k|Y_l)
+		\end{align*}
+	and an improved definition of
+		\begin{align*}
+			H(X|Y) &= \sum_k H(X_k|Y)
+		\end{align*}
+	\item This should avoid the known bugs to an extent.
+  \end{itemize}
+}
+
+\frame
+{
+  \frametitle{ A preliminary proposal  }
+
+  \begin{itemize}
+	\item But we still need to fix/replace the underestimate in 
+		\[
+			H(X_k|Y) = \min H(X_k|Y_l)
+		\]
+	\item Preliminary Proposal:
+  	\begin{itemize}
+			\item Create matrix of the $F_1$-scores between ground-truth to found. Find best score, the most ``obvious'' piece of mutual information.
+			\item Calculate the (absolute) amount of shared information between those two communities, and add it to a running total.
+			\item Delete the intersection from both communities. Loop back to the start.
+			\subitem{This intersection-deletion will deal with the problem of detecting merges and splits. Simple methods based on (static) best-matching and averaging will fail on this.}
+			\item Need a stopping criterion. When is the biggest intersection equal to that you'd expect by chance, perhaps?
+			\item This will give us a good measure of (absolute) mutual information. %Shouldn't be too hard to normalize. Perhaps based on the information left over after the stopping criterion kicks in.
+  	\end{itemize}
+  \end{itemize}
+}
+
+\end{document}
+
