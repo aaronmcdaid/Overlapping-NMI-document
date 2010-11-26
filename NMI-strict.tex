@@ -6,10 +6,11 @@
 \usepackage{url}
 \usepackage[]{hyperref}
 \usepackage{cleveref}
+\usepackage{verbatim}
 \usepackage{amsmath,amssymb}
 \usepackage{rotating}
 
-\author{Aaron McDaid 2010-03-02}
+\author{Aaron McDaid created:2010-03-02 modified:2010-11-26}
 \title{Mutual Information for overlapping groupings}
 \begin{document}
 
@@ -27,11 +28,11 @@ and a normalized \emph{variation of information}
 	V'_{norm}(X,Y) = \frac12 \left(  \frac{ H(X|Y) }{ H(X) } + \frac{ H(Y|X) }{ H(Y) } \right)   \label{VOI}
 \end{equation}
 
-They proceed to define a measure based on \cref{VOI}, not on \cref{NMI}. In this note we see how to define a measure
-strictly based on \cref{NMI}.
+They proceed to define a measure based \emph{very loosely} on \cref{VOI}, not on \cref{NMI}. In this note we see how to define a measure
+based on \cref{NMI}.
 
-Before considering a normalization, it's important to identify the \emph{absolute} value you wish to minimize.
-The appropriate measure to minimize is
+Before considering a normalization, it's important to identify the \emph{absolute} value you wish to consider.
+The appropriate measure to consider is
 \begin{equation}
 	H(X|Y) + H(Y|X)   \label{CorrectMI}
 \end{equation}
@@ -45,18 +46,34 @@ This means the amount of information taken to encode X, given that you can refer
 the information taken to encode Y, given that you can refer to X as a ``codebook''. If $X$ and $Y$ are similar, then
 $H(X|Y)$ and $H(Y|X)$ should be close to zero. Then we can identify a suitable normalization (but see the warning in \cref{sec:AbNormal})
 
+\begin{comment}
 \section{WARNING}
 I'm pretty sloppy, as ever, with my terminology. I just take $H(x)$ to mean the number of bits taken to encode $x$. Hence
 I tend to think in $\log_2$, the log to the base 2, when technically I suppose it should be $\log_e$. There's lots of other careless things too, no doubt \begin{turn}{90}(-:\end{turn}.
+\end{comment}
 
-\section{A problem with the nVOI}
+\section{problems with LFK's formula}
 \label{sec:Flood}
 
-You can get an ``nVOI'' \eqref{VOI} of at least 0.5 by simply flooding the found grouping with every subset of the population.
-Assuming $Y = \mbox{the power set}$ is the \emph{found} grouping, this will make the numerator of the first term
-very small. However, this is as much as issue with the definition of $H(X|Y)$ in equation (B.9) of \cite{lancichinetti-2009}.
-More on this after revising the basics of how to encode some information.
+You can get at least 0.5 with LFK's formula by simply flooding the found grouping with every subset of the population.
+Assuming $X = \mbox{powerset}(Y)$ is the \emph{found} grouping, this will make the numerator of the first term
+very small. But reasonably we expect that the NMI is zero in this case.
+%However, this is as much as issue with the definition of $H(X|Y)$ in equation (B.9) of \cite{lancichinetti-2009}.
+%More on this after revising the basics of how to encode some information.
 
+Another problem is that is you \emph{find} just one community, and that community is identical to one of the
+ground truth communities, then you will also get at least 0.5 for free. This is fundamentally the same problem.
+
+\section{The fixes}
+They (loosely) use \cref{VOI} instead of \cref{NMI}. Replacing this fixes the most obvious problem.
+
+The normalization is used in the wrong place.
+I have more carefully based my formula on \cref{NMI}, with normalization in the correct place.
+I do not yet have a verifiable example of any bizarre result resulted from this issue.
+
+But many of the details I use are taken straight from the LFK formula. ``If it ain't broke, don't fix it.''
+
+\begin{comment}
 \section{Basics of encoding}
 Given a \grouping, G, made up of $|G|$ groups,
 \begin{equation*}
@@ -147,12 +164,16 @@ case could be made for \cref{VOI}, I don't really know too much about any of thi
 ballpark anyway and, also, I suspect that this, corrected, \cref{VOI} would then be similar to \cref{NMI} anyway.
 
 
+\end{comment}
 \section{The cult of normalization}
 \label{sec:AbNormal}
 
+The main known problem with the LFK formula arises from aggressive normalization.
+One must understand the unnormalized quantity before one can find a reasonable normalization.
+
 When looking at the stability of an algorithm, under something like a random renaming of the nodes, it may be more
 appropriate to look at the \emph{absolute} (i.e. un-normalized) amount of information. A good community finding algorithm
-will find smaller communities \cite{ResLimit} than does modularity maximization \cite{blondel-2008}, and will
+will find smaller communities \cite{ResLimit} than does modularity maximization \cite{blondel-2008}, and might
 also find overlapping communities. Together this will mean that the found partition, $H(F)$, and presumably the ground truth, $H(G)$, will
 each contain a lot of information.
 
@@ -163,7 +184,7 @@ appropriate to use (unnormalized) mutual information
 				&= \frac12 \left( H(X) + H(Y) - H(X|Y) - H(Y|X) \right)
 \end{align*}
 If this quantity is larger for one algorithm than another, I'd say this is a better way to define it as being more ``stable''.
-An an extreme example, a trivial way to get perfect NMI, and an apparently ``stable'' algorithm is
+An an extreme example, a trivial way to get perfect NMI, and an apparently ``stable'' algorithm, is
 to create a \grouping{} with just one community which takes up the whole graph.
 
 If there is a strong desire for some sort of normalization, then that should be a function of the graph, not of either \grouping.
