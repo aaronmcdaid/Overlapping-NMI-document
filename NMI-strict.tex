@@ -10,7 +10,7 @@
 \usepackage{amsmath,amssymb}
 \usepackage{rotating}
 
-\author{Aaron McDaid created:2010-03-02 modified:2010-11-26}
+\author{Aaron McDaid, Derek Greene, Neil Hurley}
 \title{Mutual Information for overlapping groupings}
 \begin{document}
 
@@ -18,6 +18,82 @@
 
 
 \newcommand{\grouping}{\emph{grouping{}}}
+
+\begin{abstract}
+Given the increasing popularity of algorithms for overlapping clustering, in particular in social network analysis, quantitative measures are needed to measure the accuracy of a method.
+Given a set of true clusters, and the set of clusters found by an algorithm, these sets of sets must be compared to see how similar or different the sets are.
+A normalized measure is desirable in many contexts, for example assigning a value of 0 where the two sets are totally dissimilar, and 1 where they are identical.
+
+A measure based on normalized mutual information has recently become popular. We demonstrate undesirable behaviour of this measure, and show how this can be corrected
+by using a more conventional normalization. We compare the results to that of other measures, such as the Omega index \cite{collins1988omega}.
+\end{abstract}
+
+
+In a non-overlapping scenario, each node belongs to exactly one cluster. We are looking at overlapping, where a node could belong to many communities, or indeed to no clusters.
+Such a set of clusters has been referred to as a \emph{cover} in the literature, and this is the terminology that we will use.
+
+For a good introduction to our problem of comparing covers of overlapping clusters, see \cite{collins1988omega}.
+They describe the Rand index, which is defined only for disjoint clusters, and then show how to extend it to overlapping clusters.
+Each pair of nodes is considered and the number of clusters in common between the pair is counted. Even if a typical node is in many clusters,
+it's likely that a randomly chosen \emph{pair} will have zero clusters in common.
+%If there are $n$ objects, there are $N=\frac12 N(N-1)$
+These counts are calculated for both covers and the Omega index is defined as the proportion of pairs for which the shared-cluster-count is identical,
+subject to a correction for chance.
+
+\section{Mutual information}
+
+Meila (which paper to reference?) defined a measure based on mutual information for comparing disjoint clusterings.
+\citet{lancichinetti-2009} proposed a measure also based on mutual information, extended for covers.
+This measure has become quite popular for comparing community finding algorithms in social network analysis.
+It is the measure we are primarily concerned with there, and we will refer to as LFKNMI.
+
+We are proposing to use a different normalization, but first we will define the non-normalized measure.
+For full details, look at the final section of \citet{lancichinetti-2009}.
+
+Given two covers, $X$ and $Y$, we must first see how to measure the similarity between a pair of clusters.
+$X$ and $Y$ are matrices of cluster membership. There are $n$ objects.
+The first cover has $K_X$ clusters, and hence $X$ is an
+$n \times K_X$ matrix. $Y$ is an $n \times K_Y$ matrix.
+
+To compare cluster $i$ of the first cover to cluster $j$ of the second cover, we compare the vectors
+$X_i$ and $Y_j$. These are vectors of ones and zeroes.
+
+\begin{itemize}
+	\item $              { a = \sum_{m=1}^n [X_{i,m} = 0 \wedge  Y_{j,m} = 0] } $
+	\item $              { b = \sum_{m=1}^n [X_{i,m} = 0 \wedge  Y_{j,m} = 1] } $
+	\item $              { c = \sum_{m=1}^n [X_{i,m} = 1 \wedge  Y_{j,m} = 0] } $
+	\item $              { d = \sum_{m=1}^n [X_{i,m} = 1 \wedge  Y_{j,m} = 1] } $
+\end{itemize}
+
+If $a+d = n$ and therefore $b=c=0$ then the two vectors are in complete agreement.
+
+The lack of information between two vectors is defined:
+\begin{align}
+	H(X_i | Y_j) = & {} H(X_i , Y_j) - H(Y_j)  \\
+	               = & {} h(a,n) + h(b,n) + h(c,n) + h(d,n)  \\ 
+		         & {} - h(b+d,n) - h(a+c,n)
+\end{align}
+where $h(w,n) = -w \log_2 \frac{w}{n} $
+
+There is an interesting technicality here. With a pair of random clusters, there is a good chance
+there will be a small amount of mutual information. In particular, if the two
+vectors are near complements of each other, we wish to override this and define that
+there is zero mutual information. This is defined in equation (B.14) of \cite{lancichinetti-2009}.
+We also use this restriction in our proposal.
+
+\begin{equation}
+	\begin{split}
+	H^* & (X_i | Y_j) = \\
+	& \left\{
+		\begin{split}
+			H^*(X_i | Y_j) \; & \mbox{if} \; h(a,n) + h(d,n) \geq h(b,n) + h(c,n) \\
+			h(c+d,n)+h(a+b,n) \;  & \mbox{otherwise}
+		\end{split}
+	\right.
+	\end{split}
+\end{equation}
+
+\section{old}
 
 \citet{lancichinetti-2009} state the generic \emph{normalized mutual information}
 \begin{equation}
