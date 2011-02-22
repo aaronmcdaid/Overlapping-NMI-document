@@ -26,7 +26,7 @@ Given the increasing popularity of algorithms for overlapping clustering, in par
 Given a set of true clusters, and the set of clusters found by an algorithm, these sets of sets must be compared to see how similar or different the sets are.
 A normalized measure is desirable in many contexts, for example assigning a value of 0 where the two sets are totally dissimilar, and 1 where they are identical.
 
-A measure based on normalized mutual information has recently become popular. We demonstrate undesirable behaviour of this measure, and show how this can be corrected
+A measure based on normalized mutual information has recently become popular. We demonstrate unintuitive behaviour of this measure, and show how this can be corrected
 by using a more conventional normalization. We compare the results to that of other measures, such as the Omega index \cite{collins1988omega}.
 \end{abstract}
 
@@ -130,12 +130,13 @@ then summing across all the vectors in $X$,
 \cref{figVenn} gives us an easy way to remember the following useful identities, which
 apply to any mutual information context.
 
-\begin{align}
+\begin{align*}
 	H(X) = & I(X:Y) + H(X|Y) \\
 	H(Y) = & I(X:Y) + H(Y|X) \\
 	H(X,Y) = & H(X) + H(Y|X) \\
-	H(X,Y) = & H(Y) + H(X|Y)
-\end{align}
+	H(X,Y) = & H(Y) + H(X|Y) \\
+	H(X,Y) = & \overbrace{I(X:Y)}^\text{mutual information} + \overbrace{H(X|Y) + H(Y|X)}^\text{variation of information}
+\end{align*}
 
 This gives us two definitions for the mutual information, $I(X:Y)$.
 In theory, these should be identical, but due to the nature of \cref{eqnBestMatch}
@@ -147,16 +148,76 @@ they may be different. Therefore, we will use the average of the two.
 
 We are now ready to discuss normalization, contrasting the method of \lfk
 with our proposed alternative.
+
+\citet{lancichinetti-2009} define their own normalization of the \emph{variation of information},
+\begin{equation}
+	VI_{normalized}(X,Y) = \frac12 \left(  \frac{ H(X|Y) }{ H(X) } + \frac{ H(Y|X) }{ H(Y) } \right)   \label{VOI}
+\end{equation}
+and their normalized mutual information is
+\begin{equation}
+	I_{normalized}(X,Y) = 1 - \frac12 \left(  \frac{ H(X|Y) }{ H(X) } + \frac{ H(Y|X) }{ H(Y) } \right) %  \label{VOI}
+\end{equation}
+
+There is another aspect to the non-standard normalization used in LFKNMI;
+it involves a normalization used in their definition of $H(X_i|Y_j)$. But this is not the root
+cause of the problems we will describe, hence we will not dwell on it.
+
+There are of course many ways to normalize a quantity such as the \emph{variation of information}.
+Normalization typically involves division by a quantity $c$,
+\begin{equation}
+	\frac{ H(X|Y) + H(Y|X) } {c(X,Y)} \label{eqnNorms}
+\end{equation}
+where $c$ is a function of $X$ and $Y$ which is guaranteed to be less than or equal to the numerator.
+But LFKNMI does not use a normalization of this standard form, instead using \cref{VOI}.
+
+\section{Unintuitive behaviour of LFKNMI}
+There are circumstances where LFKNMI overestimates the similarity of two clusters.
+We will show how an alternative normalization will fix these problems.
+
+Imagine a cover $X$, and we are comparing it to a cover $Y$. Further, imagine $Y$ has only one
+cluster ($K_Y=1$) and this cluster is identical to one of the clusters in $X$.
+For large $K_x$, we would expect the normalized mutual information to be quite low.
+An intuitive result would be approximately $\frac1{K_X}$.
+
+However, $\mbox{LFKNMI}(X,Y)$ will be at least $0.5$ in cases like this.
+This is because $H(Y|X)$ will be zero bits
+(the cluster in $Y$ can be encoded with zero bits because it has a perfect match among the clusters of $X$)
+and this will result in a contribution of $0.5$ to the final NMI.
+
+The other problematic example involves the power set. There are $n$ objects in total. To create a cover involving
+every subset of the $n$ objects will create $2^n - 1$ clusters. We will ignore the empty subset.
+This is the power set, which we denote as $p(n)$.
+
+$\mbox{LFKNMI}(X, p(n))$ will again be slightly greater than $0.5$. Every cluster in $X$ will
+have a perfect match in $p(n)$ and this will result in $H(X|p(n)) = 0$.
+
+In both these examples LFKNMI gives a score slightly above $0.5$. The intuitive behaviour
+in these cases would be for a similarity score close to $0$. If we remove the
+normalization from LFKNMI, and instead use a more conventional normalization strategy
+\cref{eqnNorms}, this more intuitive behaviour will be found.
+
+\section{normalization}
+
+\section{evaluation}
+
+(Do the simple experiment, involving finding one community (perfectly) at a time.)
+
+\section{conclusion}
+
+
+
+
+
+
+
+\break
+
 \section{old}
 
-\citet{lancichinetti-2009} state the generic \emph{normalized mutual information}
-\begin{equation}
-	I_{norm}(X:Y) = \frac { H(X) + H(Y) - H(X,Y) } { \left( H(X) + H(Y) \right ) /2 }   \label{NMI}
-\end{equation}
-and a normalized \emph{variation of information} 
-\begin{equation}
-	V'_{norm}(X,Y) = \frac12 \left(  \frac{ H(X|Y) }{ H(X) } + \frac{ H(Y|X) }{ H(Y) } \right)   \label{VOI}
-\end{equation}
+ \citet{lancichinetti-2009} state the generic \emph{normalized mutual information}
+ \begin{equation}
+	 I_{norm}(X:Y) = \frac { H(X) + H(Y) - H(X,Y) } { \left( H(X) + H(Y) \right ) /2 }   \label{NMI}
+ \end{equation}
 
 They proceed to define a measure based \emph{very loosely} on \cref{VOI}, not on \cref{NMI}. In this note we see how to define a measure
 based on \cref{NMI}.
