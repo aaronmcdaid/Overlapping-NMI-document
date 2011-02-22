@@ -9,6 +9,7 @@
 \usepackage{verbatim}
 \usepackage{amsmath,amssymb}
 \usepackage{rotating}
+\usepackage{tikz}
 
 \author{Aaron McDaid, Derek Greene, Neil Hurley}
 \title{Mutual Information for overlapping groupings}
@@ -18,6 +19,7 @@
 
 
 \newcommand{\grouping}{\emph{grouping{}}}
+\newcommand{\lfk}{\cite{lancichinetti-2009} {}}
 
 \begin{abstract}
 Given the increasing popularity of algorithms for overlapping clustering, in particular in social network analysis, quantitative measures are needed to measure the accuracy of a method.
@@ -93,6 +95,58 @@ We also use this restriction in our proposal.
 	\end{split}
 \end{equation}
 
+This allows us to compare vectors $X_i$ and $Y_j$, but we want to compare the entire matrices
+$X$ and $Y$ to each other. We will follow the approximation used by \lfk here and
+match each vector in $X$ to its best match in $Y$,
+
+\begin{equation}
+	H(X_i | Y) = \underset{j \in \{1,\dots K_Y \}}{\min} H(X_i | Y_j)
+	\label{eqnBestMatch}
+\end{equation}
+
+then summing across all the vectors in $X$,
+
+\begin{equation}
+	H(X | Y) = \sum_{i \in \{1,\dots K_X \}} H(X_i | Y)
+\end{equation}
+
+\section{Useful identities}
+
+\begin{figure}
+	\centering
+\begin{tikzpicture}
+	\draw (-1cm,0) circle(2cm);
+	\draw (1cm,0) circle(2cm);
+	\draw (0,0cm) node[fill=white] {$I(X:Y)$};
+	\draw (1.8cm,0cm) node[fill=white] {$H(Y|X)$};
+	\draw (-1.8cm,0cm) node[fill=white] {$H(X|Y)$};
+	\path(1cm,0) ++  (60:2.2cm) node[rotate=-25] {$H(Y)$};
+	\path(-1cm,0) ++ (120:2.2cm) node[rotate= 25] {$H(X)$};
+\end{tikzpicture}
+\caption{\label{figVenn} Mutual information and variation of information. The total information $H(X,Y) = H(X|Y) + I(X:Y) + H(Y|X)$. }
+\end{figure}
+
+
+\cref{figVenn} gives us an easy way to remember the following useful identities, which
+apply to any mutual information context.
+
+\begin{align}
+	H(X) = & I(X:Y) + H(X|Y) \\
+	H(Y) = & I(X:Y) + H(Y|X) \\
+	H(X,Y) = & H(X) + H(Y|X) \\
+	H(X,Y) = & H(Y) + H(X|Y)
+\end{align}
+
+This gives us two definitions for the mutual information, $I(X:Y)$.
+In theory, these should be identical, but due to the nature of \cref{eqnBestMatch}
+they may be different. Therefore, we will use the average of the two.
+
+\begin{equation}
+	I(X:Y) = \frac12 \left[ H(X)-H(X|Y) + H(Y)-H(Y|X) \right]
+\end{equation}
+
+We are now ready to discuss normalization, contrasting the method of \lfk
+with our proposed alternative.
 \section{old}
 
 \citet{lancichinetti-2009} state the generic \emph{normalized mutual information}
