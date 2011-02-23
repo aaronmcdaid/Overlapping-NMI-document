@@ -158,10 +158,6 @@ and their normalized mutual information is
 	I_{normalized}(X,Y) = 1 - \frac12 \left(  \frac{ H(X|Y) }{ H(X) } + \frac{ H(Y|X) }{ H(Y) } \right) %  \label{VOI}
 \end{equation}
 
-There is another aspect to the non-standard normalization used in LFKNMI;
-it involves a normalization used in their definition of $H(X_i|Y_j)$. But this is not the root
-cause of the problems we will describe, hence we will not dwell on it.
-
 There are of course many ways to normalize a quantity such as the \emph{variation of information}.
 Normalization typically involves division by a quantity $c$,
 \begin{equation}
@@ -169,6 +165,10 @@ Normalization typically involves division by a quantity $c$,
 \end{equation}
 where $c$ is a function of $X$ and $Y$ which is guaranteed to be less than or equal to the numerator.
 But LFKNMI does not use a normalization of this standard form, instead using \cref{VOI}.
+
+There is another aspect to the non-standard normalization used in LFKNMI;
+it involves a normalization used in their definition of $H(X_i|Y_j)$. But this is not the root
+cause of the problems we will describe, hence we will not dwell on it.
 
 \section{Unintuitive behaviour of LFKNMI}
 There are circumstances where LFKNMI overestimates the similarity of two clusters.
@@ -181,24 +181,28 @@ An intuitive result would be approximately $\frac1{K_X}$.
 
 However, $\mbox{LFKNMI}(X,Y)$ will be at least $0.5$ in cases like this.
 This is because $H(Y|X)$ will be zero bits
-(the cluster in $Y$ can be encoded with zero bits because it has a perfect match among the clusters of $X$)
+(the single cluster in $Y$ can be encoded with zero bits because it has a perfect match among the clusters of $X$)
 and this will result in a contribution of $0.5$ to the final NMI.
 
 The other problematic example involves the power set. There are $n$ objects in total. To create a cover involving
-every subset of the $n$ objects will create $2^n - 1$ clusters. We will ignore the empty subset.
+every subset of the $n$ objects will create $2^n - 1$ clusters; we will ignore the empty subset.
 This is the power set, which we denote as $p(n)$.
 
 $\mbox{LFKNMI}(X, p(n))$ will again be slightly greater than $0.5$. Every cluster in $X$ will
 have a perfect match in $p(n)$ and this will result in $H(X|p(n)) = 0$.
 
 In both these examples LFKNMI gives a score slightly above $0.5$. The intuitive behaviour
-in these cases would be for a similarity score close to $0$. If we remove the
+in these cases would be for a similarity score close to $0$.
+We will demonstrate this behaviour in our experiments in \cref{secEval}
+
+When we remove the
 normalization from LFKNMI, and instead use a more conventional normalization strategy
-\cref{eqnNorms}, this more intuitive behaviour will be found.
+\cref{eqnNorms}, we will find more intuitive behaviour.
 
 \section{normalization}
 
 \section{evaluation}
+\label{secEval}
 
 (Do the simple experiment, involving finding one community (perfectly) at a time.)
 
