@@ -181,6 +181,7 @@ Our change is to remove all the normalization steps from their analysis and inst
 use a more conventional normalization of the form of \cref{eqnNorms}.
 
 \section{Unintuitive behaviour of LFKNMI}
+\label{secUnintuitive}
 There are circumstances where LFKNMI overestimates the similarity of two clusters.
 We will show how an alternative normalization will fix these problems.
 
@@ -210,6 +211,7 @@ normalization from LFKNMI, and instead use a more conventional normalization str
 \cref{eqnNorms}, we will find more intuitive behaviour.
 
 \section{normalization}
+\label{secNormalization}
 
 Typically a normalization will involve a simple division of the absolute quantity
 by a quantity which is gauranteed to be an upper bound, giving us a number between
@@ -250,7 +252,23 @@ This corresponds to one circle in \cref{figVenn} being much larger than the othe
 \section{evaluation}
 \label{secEval}
 
-(Do the simple experiment, involving finding one community (perfectly) at a time.)
+\begin{figure}
+\includegraphics[width=0.5\textwidth]{plot}
+\caption{As more communities are found, the score of LFKNMI and $\text{NMI}_{max}$ increase. For a small number of communities found, the intuitive result is a small value, and this is the behaviour of our proposed measure.}
+\label{fig1to20}
+\end{figure}
+
+See \cref{fig1to20}. There are 200 nodes, divided into 20 communities. Each community has 10 nodes and they do not overlap.
+We fix one of our covers, $X$, to be the full set of twenty communities. $Y$ contains a subset of these communities.
+As we go from left to right, the number of communities in $Y$ increases from 1 to 20.
+
+The communities in $Y$ are perfect copies of communities in $X$. Therefore, $X=Y$ when all 20 communities are used.
+We see this in \cref{fig1to20} at the right, where both measures report an NMI of $1.0$.
+
+This figure confirms the unintuitive behaviour of LFKNMI when few communities are found.
+On the left of the figure, when $Y$ has only one community, the score of $0.5$ is unintuitive.
+
+The linear relationship of our NMI$_{max}$, going from 0 to 1 as the number of communities in $Y$ increases, is intuitive.
 
 \section{conclusion}
 
