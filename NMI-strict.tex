@@ -37,7 +37,7 @@ Such a set of clusters has been referred to as a \emph{cover} in the literature,
 For a good introduction to our problem of comparing covers of overlapping clusters, see \cite{collins1988omega}.
 They describe the Rand index, which is defined only for disjoint clusters, and then show how to extend it to overlapping clusters.
 Each pair of nodes is considered and the number of clusters in common between the pair is counted. Even if a typical node is in many clusters,
-it's likely that a randomly chosen \emph{pair} will have zero clusters in common.
+it's likely that a randomly chosen pair of nodes will have zero clusters in common.
 %If there are $n$ objects, there are $N=\frac12 N(N-1)$
 These counts are calculated for both covers and the Omega index is defined as the proportion of pairs for which the shared-cluster-count is identical,
 subject to a correction for chance.
@@ -47,7 +47,7 @@ subject to a correction for chance.
 Meila (which paper to reference?) defined a measure based on mutual information for comparing disjoint clusterings.
 \citet{lancichinetti-2009} proposed a measure also based on mutual information, extended for covers.
 This measure has become quite popular for comparing community finding algorithms in social network analysis.
-It is the measure we are primarily concerned with there, and we will refer to as LFKNMI.
+It is the measure we are primarily concerned with there, and we will refer to it as LFKNMI named after the authors.
 
 We are proposing to use a different normalization, but first we will define the non-normalized measure.
 For full details, look at the final section of \citet{lancichinetti-2009}.
@@ -67,7 +67,7 @@ $X_i$ and $Y_j$. These are vectors of ones and zeroes.
 	\item $              { d = \sum_{m=1}^n [X_{i,m} = 1 \wedge  Y_{j,m} = 1] } $
 \end{itemize}
 
-If $a+d = n$ and therefore $b=c=0$ then the two vectors are in complete agreement.
+If $a+d = n$, and therefore $b=c=0$, then the two vectors are in complete agreement.
 
 The lack of information between two vectors is defined:
 \begin{align}
@@ -77,10 +77,13 @@ The lack of information between two vectors is defined:
 \end{align}
 where $h(w,n) = -w \log_2 \frac{w}{n} $
 
-There is an interesting technicality here. With a pair of random clusters, there is a good chance
-there will be a small amount of mutual information. In particular, if the two
-vectors are near complements of each other, we wish to override this and define that
-there is zero mutual information. This is defined in equation (B.14) of \cite{lancichinetti-2009}.
+There is an interesting technicality here. Imagine a pair of clusters but where the memberships
+have been defined randomly.
+There is a possibility that there will be a small amount of mutual information, even in this situation where the two vectors are negatively correlated with each other.
+In extremis, if the two vectors are near complements of each other, mutual information will be very high. We wish to override this and define that
+there is zero mutual information in this case.
+% The mutual information should be positive if and only if the correlation is positive (can we include this?)
+This is defined in equation (B.14) of \cite{lancichinetti-2009}.
 We also use this restriction in our proposal.
 
 \begin{equation}
@@ -111,6 +114,8 @@ then summing across all the vectors in $X$,
 	H(X | Y) = \sum_{i \in \{1,\dots K_X \}} H(X_i | Y)
 	\label{eqnSumVectors}
 \end{equation}
+
+$H(Y|X)$ is defined in a similar way to $H(X|Y)$, but with the roles reversed.
 
 \section{Useful identities}
 
@@ -145,18 +150,18 @@ In theory, these should be identical, but due to the nature of \cref{eqnBestMatc
 they may be different. Therefore, we will use the average of the two.
 
 \begin{equation}
-	I(X:Y) = \frac12 \left[ H(X)-H(X|Y) + H(Y)-H(Y|X) \right]
+	I(X:Y) := \frac12 \left[ H(X)-H(X|Y) + H(Y)-H(Y|X) \right]
 	\label{eqnAverageOfTwo}
 \end{equation}
 
 We are now ready to discuss normalization, contrasting the method of \lfk
-with our proposed alternative.
+with our alternative.
 
 \citet{lancichinetti-2009} define their own normalization of the \emph{variation of information},
 \begin{equation}
 	VI_{normalized}(X,Y) = \frac12 \left(  \frac{ H(X|Y) }{ H(X) } + \frac{ H(Y|X) }{ H(Y) } \right)   \label{VOI}
 \end{equation}
-and their normalized mutual information is
+and hence their normalized mutual information is
 \begin{equation}
 	I_{normalized}(X,Y) = 1 - \frac12 \left(  \frac{ H(X|Y) }{ H(X) } + \frac{ H(Y|X) }{ H(Y) } \right) %  \label{VOI}
 \end{equation}
@@ -170,8 +175,10 @@ where $c$ is a function of $X$ and $Y$ which is guaranteed to be less than or eq
 But LFKNMI does not use a normalization of this standard form, instead using \cref{VOI}.
 
 There is another aspect to the non-standard normalization used in LFKNMI;
-it involves a normalization used in their definition of $H(X_i|Y_j)$. But this is not the root
-cause of the problems we will describe, hence we will not dwell on it.
+they insert an extra normalization factor into their definition of $H(X_i|Y_j)$.
+But this is not the root cause of the problems we will describe, hence we will not dwell on it.
+Our change is to remove all the normalization steps from their analysis and instead
+use a more conventional normalization of the form of \cref{eqnNorms}.
 
 \section{Unintuitive behaviour of LFKNMI}
 There are circumstances where LFKNMI overestimates the similarity of two clusters.
@@ -185,10 +192,10 @@ An intuitive result would be approximately $\frac1{K_X}$.
 However, $\mbox{LFKNMI}(X,Y)$ will be at least $0.5$ in cases like this.
 This is because $H(Y|X)$ will be zero bits
 (the single cluster in $Y$ can be encoded with zero bits because it has a perfect match among the clusters of $X$)
-and this will result in a contribution of $0.5$ to the final NMI.
+and this will result in a contribution of $0.5$ to the LFKNMI.
 
-The other problematic example involves the power set. There are $n$ objects in total. To create a cover involving
-every subset of the $n$ objects will create $2^n - 1$ clusters; we will ignore the empty subset.
+The other problematic example involves the power set. There are $n$ objects in total.
+A cover involving every subset of the $n$ objects will create $2^n - 1$ clusters; we will ignore the empty subset.
 This is the power set, which we denote as $p(n)$.
 
 $\mbox{LFKNMI}(X, p(n))$ will again be slightly greater than $0.5$. Every cluster in $X$ will
@@ -234,9 +241,10 @@ the opposite behaviour, so we'll use the corresponding normalized mutual informa
 where $I(X:Y)$ is as defined in \cref{eqnNoComplements,eqnBestMatch,eqnSumVectors,eqnAverageOfTwo}
 
 
-This can also be understood with reference to \cref{figVenn}. The problem arises
-when one cover is more complicated than the other, for example if it has many
-more clusters than the other. This corresponds to a very large circle in \cref{figVenn}.
+This can also be understood with reference to \cref{figVenn}. The problem with LFKNMI arises
+when one cover is more complicated than the other, for example if one cover has many
+more clusters than the other cover.
+This corresponds to one circle in \cref{figVenn} being much larger than the other.
 
 
 \section{evaluation}
