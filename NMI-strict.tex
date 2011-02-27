@@ -93,6 +93,7 @@ We also use this restriction in our proposal.
 		\end{split}
 	\right.
 	\end{split}
+	\label{eqnNoComplements}
 \end{equation}
 
 This allows us to compare vectors $X_i$ and $Y_j$, but we want to compare the entire matrices
@@ -108,6 +109,7 @@ then summing across all the vectors in $X$,
 
 \begin{equation}
 	H(X | Y) = \sum_{i \in \{1,\dots K_X \}} H(X_i | Y)
+	\label{eqnSumVectors}
 \end{equation}
 
 \section{Useful identities}
@@ -144,6 +146,7 @@ they may be different. Therefore, we will use the average of the two.
 
 \begin{equation}
 	I(X:Y) = \frac12 \left[ H(X)-H(X|Y) + H(Y)-H(Y|X) \right]
+	\label{eqnAverageOfTwo}
 \end{equation}
 
 We are now ready to discuss normalization, contrasting the method of \lfk
@@ -200,6 +203,41 @@ normalization from LFKNMI, and instead use a more conventional normalization str
 \cref{eqnNorms}, we will find more intuitive behaviour.
 
 \section{normalization}
+
+Typically a normalization will involve a simple division of the absolute quantity
+by a quantity which is gauranteed to be an upper bound, giving us a number between
+zero and one.
+
+The following sequence of inequalities from \citet{VinhEppsBailey} provide possibilities for normalization.
+
+\begin{equation}
+	\begin{split}
+	I(X:Y) \leq & \min(H(X),H(Y)) \\
+	       \leq & \sqrt{H(X),H(Y)} \\
+	       \leq & \frac12 \left(H(X)+H(Y)\right) \\
+	       \leq & \max(H(X),H(Y)) \\
+	       \leq & H(X,Y)
+	\end{split}
+\end{equation}
+
+Any of the five expressions on the right can be used, and \cite{VinhEppsBailey} suggest
+a measure based on $\max(H(X),H(Y))$. The Normalized Information Distance is recommended
+\begin{equation*}
+	d_{max} = 1 - \frac{ I(X,Y) }{ \max(H(X),H(Y)) }
+\end{equation*}
+where zero means perfect similarity and one means dissimilarity. We want a measure with
+the opposite behaviour, so we'll use the corresponding normalized mutual information
+
+\begin{equation}
+	NMI_{max} = \frac{ I(X:Y) }{ \max(H(X),H(Y)) }
+\end{equation}
+where $I(X:Y)$ is as defined in \cref{eqnNoComplements,eqnBestMatch,eqnSumVectors,eqnAverageOfTwo}
+
+
+This can also be understood with reference to \cref{figVenn}. The problem arises
+when one cover is more complicated than the other, for example if it has many
+more clusters than the other. This corresponds to a very large circle in \cref{figVenn}.
+
 
 \section{evaluation}
 \label{secEval}
